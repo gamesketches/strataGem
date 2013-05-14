@@ -49,11 +49,15 @@ def distance(point1, point2):
 
 class Tank(pygame.sprite.Sprite):
     """Main unit of the game, gets selected when clicked on, and moves"""
-    def __init__(self):
+    def __init__(self, playerControlled):
         pygame.sprite.Sprite.__init__(self)
         self.selected = False
         self.target = None
-        self.image, self.rect = load_image("tank.bmp")
+        self.playerControlled = playerControlled
+        if playerControlled:
+            self.image, self.rect = load_image("tank.bmp")
+        else:
+            self.image, self.rect = load_image("enemyTank.bmp")
         self.position = Point(self.rect.center[0], self.rect.center[1])
         self.attacking = False
         self.attackDelay = 70
@@ -138,8 +142,8 @@ def main():
     pygame.display.flip()
 
     #Prepare Game Objects
-    tank = Tank()
-    enemyTank = Tank()
+    tank = Tank(True)
+    enemyTank = Tank(False)
     enemyTank.rect = enemyTank.rect.move(200,200)
     allsprites = pygame.sprite.Group(tank, enemyTank)
     clock = pygame.time.Clock()
@@ -160,9 +164,10 @@ def main():
                 for i in allsprites.sprites():
                     if i.rect.collidepoint(pygame.mouse.get_pos()):
                         if curSelected is None:
-                            curSelected = i
-                            selectedSomething = True
-                            break
+                            if i.playerControlled:
+                                curSelected = i
+                                selectedSomething = True
+                                break
                         else:
                             curSelected.target = i
                             curSelected = None
