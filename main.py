@@ -44,7 +44,7 @@ class Point():
         return (self.x,self.y)
 
 def distance(point1, point2):
-    return math.sqrt(math.pow(point2.x - point1.x, 2), math.pow(point2.y - point1.y, 2))
+    return math.sqrt(math.pow(point2.x - point1.x, 2) + math.pow(point2.y - point1.y, 2))
     
 
 class Tank(pygame.sprite.Sprite):
@@ -54,8 +54,11 @@ class Tank(pygame.sprite.Sprite):
         self.selected = False
         self.target = None
         self.image, self.rect = load_image("tank.bmp")
+        self.position = Point(self.rect.center[0], self.rect.center[1])
 
     def update(self):
+        self.position.x = self.rect.center[0]
+        self.position.y = self.rect.center[1]
         if self.target:
             
             if type(self.target) is not Tank:
@@ -64,7 +67,7 @@ class Tank(pygame.sprite.Sprite):
                 else:
                     self.target = None
             else:
-                if distance(Point(self.rect.center.x,self.rect.center.y), Point(self.target.x, self.target.y)) >= 20:
+                if distance(self.position, self.target.position) >= 40:
                     self.pressForward()
                 else:
                     print "Engaging"
@@ -72,7 +75,7 @@ class Tank(pygame.sprite.Sprite):
 
     def pressForward(self):
         if type(self.target) is Tank:
-            targetPos = self.target.rect.center
+            targetPos = self.target.position
         else:
             targetPos = self.target
         moveBy = [0,0]
@@ -111,7 +114,9 @@ def main():
 
     #Prepare Game Objects
     tank = Tank()
-    allsprites = pygame.sprite.Group(tank)
+    enemyTank = Tank()
+    enemyTank.rect = enemyTank.rect.move(200,200)
+    allsprites = pygame.sprite.Group(tank, enemyTank)
     clock = pygame.time.Clock()
 
     curSelected = None
