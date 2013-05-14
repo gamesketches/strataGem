@@ -1,4 +1,4 @@
-import pygame, sys, os
+import pygame, sys, os, math
 from pygame.locals import *
 
 if not pygame.font: print 'Warning, fonts disabled'
@@ -43,6 +43,10 @@ class Point():
     def getTuple(self):
         return (self.x,self.y)
 
+def distance(point1, point2):
+    return math.sqrt(math.pow(point2.x - point1.x, 2), math.pow(point2.y - point1.y, 2))
+    
+
 class Tank(pygame.sprite.Sprite):
     """Main unit of the game, gets selected when clicked on, and moves"""
     def __init__(self):
@@ -60,7 +64,7 @@ class Tank(pygame.sprite.Sprite):
                 else:
                     self.target = None
             else:
-                if distance(self, self.target) >= 20:
+                if distance(Point(self.rect.center.x,self.rect.center.y), Point(self.target.x, self.target.y)) >= 20:
                     self.pressForward()
                 else:
                     print "Engaging"
@@ -90,7 +94,6 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((468, 500))
     pygame.display.set_caption('Monkey Fever')
-    pygame.mouse.set_visible(0)
 
     #Create the background
     background = pygame.Surface(screen.get_size())
@@ -108,9 +111,10 @@ def main():
 
     #Prepare Game Objects
     tank = Tank()
-    tank.target = Point(300,300)
     allsprites = pygame.sprite.Group(tank)
     clock = pygame.time.Clock()
+
+    curSelected = None
 
     going = True
     while going:
@@ -121,6 +125,22 @@ def main():
                 pygame.quit()
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 pygame.quit()
+            elif event.type == MOUSEBUTTONDOWN:
+                selectedSomething = False
+                for i in allsprites.sprites():
+                    if i.rect.collidepoint(pygame.mouse.get_pos()):
+                        if curSelected is None:
+                            curSelected = i
+                            selectedSomething = True
+                            break
+                        else:
+                            curSelected.target = i
+                            curSelected = None
+                            selectedSomething = True
+                            break
+                if not selectedSomething and curSelected is not None:
+                    curSelected.target = Point(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+                    curSelected = None
 
         screen.blit(background, (0,0))
         allsprites.update()
