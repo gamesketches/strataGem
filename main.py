@@ -45,7 +45,23 @@ class Point():
 
 def distance(point1, point2):
     return math.sqrt(math.pow(point2.x - point1.x, 2) + math.pow(point2.y - point1.y, 2))
-    
+
+class Town(pygame.sprite.Sprite):
+    """towns that get attacked in the game, the big "moral choice" of the game is saving one"""
+    def __init__(self):
+        pygame.sprite.Sprite__init__(self)
+        self. hp = 20
+        self.image, self.rect = load_image("town.bmp")
+
+    def takeDamage(self, damage, aggressor):
+        "Takes damage, ends game when it dies"
+        self.hp -= damage
+        print "Town is under attack"
+        if self.hp <= 0:
+            pygame.quit()
+        else:
+            return False
+                             
 
 class Tank(pygame.sprite.Sprite):
     """Main unit of the game, gets selected when clicked on, and moves"""
@@ -100,10 +116,12 @@ class Tank(pygame.sprite.Sprite):
 
         self.rect = self.rect.move(moveBy[0], moveBy[1])
             
-    def takeDamage(self, damage):
+    def takeDamage(self, damage, aggressor):
         "Takes damage, returns true if unit dies, false otherwise"
         self.hp -= damage
         print "We've been hit"
+        if self.target is None or not self.playerControlled:
+            self.target = aggressor
         if self.hp <= 0:
             self.kill()
             return True
@@ -114,7 +132,7 @@ class Tank(pygame.sprite.Sprite):
         self.reloadTime += 1
         if self.reloadTime >= self.attackDelay:
             self.reloadTime = 0
-            if self.target.takeDamage(2):
+            if self.target.takeDamage(2, self):
                 print "Target Destroyed"
                 self.target = None
                 self.attacking = False
