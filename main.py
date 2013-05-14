@@ -55,11 +55,17 @@ class Tank(pygame.sprite.Sprite):
         self.target = None
         self.image, self.rect = load_image("tank.bmp")
         self.position = Point(self.rect.center[0], self.rect.center[1])
+        self.attacking = False
+        self.attackDelay = 70
+        self.reloadTime = 70
+        self.hp = 10
 
     def update(self):
         self.position.x = self.rect.center[0]
         self.position.y = self.rect.center[1]
-        if self.target:
+        if self.attacking:
+            self.attackTarget()
+        elif self.target:
             
             if type(self.target) is not Tank:
                 if not self.rect.collidepoint(self.target.getTuple()):
@@ -71,7 +77,7 @@ class Tank(pygame.sprite.Sprite):
                     self.pressForward()
                 else:
                     print "Engaging"
-                    self.target = None
+                    self.attacking = True
 
     def pressForward(self):
         if type(self.target) is Tank:
@@ -90,7 +96,26 @@ class Tank(pygame.sprite.Sprite):
 
         self.rect = self.rect.move(moveBy[0], moveBy[1])
             
+    def takeDamage(self, damage):
+        "Takes damage, returns true if unit dies, false otherwise"
+        self.hp -= damage
+        print "We've been hit"
+        if self.hp <= 0:
+            self.kill()
+            return True
+        else:
+            return False
 
+    def attackTarget(self):
+        self.reloadTime += 1
+        if self.reloadTime >= self.attackDelay:
+            self.reloadTime = 0
+            if self.target.takeDamage(2):
+                print "Target Destroyed"
+                self.target = None
+                self.attacking = False
+                self.reloadTime = self.attackDelay
+                
 def main():
     
     #Initialize Everything
