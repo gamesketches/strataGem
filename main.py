@@ -62,6 +62,10 @@ class Town(pygame.sprite.Sprite):
             pygame.quit()
         else:
             return False
+
+    def update(self):
+        self.position.x = self.rect.center[0]
+        self.position.y = self.rect.center[1]
                              
 
 class Tank(pygame.sprite.Sprite):
@@ -85,6 +89,8 @@ class Tank(pygame.sprite.Sprite):
         self.position.x = self.rect.center[0]
         self.position.y = self.rect.center[1]
         if self.attacking:
+            if distance(self.position, self.target.position) >= 100:
+                self.attacking = False
             self.attackTarget()
         elif self.target:
             
@@ -93,8 +99,9 @@ class Tank(pygame.sprite.Sprite):
                     self.pressForward()
                 else:
                     self.target = None
+                    print "finished moving"
             else:
-                if distance(self.position, self.target.position) >= 40:
+                if distance(self.position, self.target.position) >= 100:
                     self.pressForward()
                 else:
                     print "Engaging"
@@ -138,13 +145,23 @@ class Tank(pygame.sprite.Sprite):
                 self.target = None
                 self.attacking = False
                 self.reloadTime = self.attackDelay
+            else:
+                print "Did it hit?"
+
+    def acquireTarget(self, newTarget):
+        if type(newTarget) is Tank or type(newTarget) is Town:
+            self.attacking = False
+            self.target = newTarget
+        elif type(newTarget) is Point:
+            self.attacking = False
+            self.target = newTarget
                 
 def main():
     
     #Initialize Everything
     pygame.init()
-    screen = pygame.display.set_mode((468, 500))
-    pygame.display.set_caption('Monkey Fever')
+    screen = pygame.display.set_mode((1000, 600))
+    pygame.display.set_caption('Strata Gem')
 
     #Create the background
     background = pygame.Surface(screen.get_size())
@@ -163,9 +180,10 @@ def main():
     #Prepare Game Objects
     tank = Tank(True)
     enemyTank = Tank(False)
-    enemyTank.rect = enemyTank.rect.move(200,200)
+    enemyTank.rect = enemyTank.rect.move(0,200)
     town = Town()
-    town.rect = town.rect.move(50, 200)
+    town.rect = town.rect.move(50, 400)
+    enemyTank.target = town
     allsprites = pygame.sprite.Group(tank, enemyTank, town)
     clock = pygame.time.Clock()
 
@@ -190,11 +208,13 @@ def main():
                                 selectedSomething = True
                                 break
                         else:
+                            curSelected.attacking = False
                             curSelected.target = i
                             curSelected = None
                             selectedSomething = True
                             break
                 if not selectedSomething and curSelected is not None:
+                    curSelected.attacking = False
                     curSelected.target = Point(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
                     curSelected = None
 
