@@ -49,9 +49,10 @@ def distance(point1, point2):
 class Town(pygame.sprite.Sprite):
     """towns that get attacked in the game, the big "moral choice" of the game is saving one"""
     def __init__(self):
-        pygame.sprite.Sprite__init__(self)
+        pygame.sprite.Sprite.__init__(self)
         self. hp = 20
         self.image, self.rect = load_image("town.bmp")
+        self.position = Point(self.rect.center[0], self.rect.center[1])
 
     def takeDamage(self, damage, aggressor):
         "Takes damage, ends game when it dies"
@@ -87,7 +88,7 @@ class Tank(pygame.sprite.Sprite):
             self.attackTarget()
         elif self.target:
             
-            if type(self.target) is not Tank:
+            if type(self.target) is not Tank and type(self.target) is not Town:
                 if not self.rect.collidepoint(self.target.getTuple()):
                     self.pressForward()
                 else:
@@ -100,7 +101,7 @@ class Tank(pygame.sprite.Sprite):
                     self.attacking = True
 
     def pressForward(self):
-        if type(self.target) is Tank:
+        if type(self.target) is Tank or type(self.target) is Town:
             targetPos = self.target.position
         else:
             targetPos = self.target
@@ -163,7 +164,9 @@ def main():
     tank = Tank(True)
     enemyTank = Tank(False)
     enemyTank.rect = enemyTank.rect.move(200,200)
-    allsprites = pygame.sprite.Group(tank, enemyTank)
+    town = Town()
+    town.rect = town.rect.move(50, 200)
+    allsprites = pygame.sprite.Group(tank, enemyTank, town)
     clock = pygame.time.Clock()
 
     curSelected = None
