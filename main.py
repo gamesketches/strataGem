@@ -7,6 +7,8 @@ if not pygame.mixer: print 'Warning, sound disabled'
 main_dir = os.path.split(os.path.abspath(sys.argv[0]))[0]
 data_dir = os.path.join(main_dir, 'data')
 
+THESCREEN = None
+
 def load_image(name, colorkey=None):
     fullname = os.path.join(data_dir, name)
     try:
@@ -48,24 +50,45 @@ def distance(point1, point2):
 
 class Town(pygame.sprite.Sprite):
     """towns that get attacked in the game, the big "moral choice" of the game is saving one"""
-    def __init__(self):
+    def __init__(self, playerControlled):
         pygame.sprite.Sprite.__init__(self)
-        self. hp = 20
-        self.image, self.rect = load_image("town.bmp")
+        self.hp = 20
+        self.flash = 0
+        self.damaged = False
+        self.playerControlled = playerControlled
+        if not playerControlled:
+            self.image, self.rect = load_image("town.bmp")
+        else:
+            self.image, self.rect = load_image("base.bmp")
+        self.flashSurface = pygame.Surface(self.rect.size)
+        self.flashSurface = self.flashSurface.convert()
+        self.flashSurface.fill((250,0,0))
         self.position = Point(self.rect.center[0], self.rect.center[1])
 
     def takeDamage(self, damage, aggressor):
         "Takes damage, ends game when it dies"
         self.hp -= damage
+        self.damaged = True
         print "Town is under attack"
         if self.hp <= 0:
-            pygame.quit()
+            self.kill()
+            if self.playerControlled:
+                pygame.quit()
         else:
             return False
 
     def update(self):
         self.position.x = self.rect.center[0]
         self.position.y = self.rect.center[1]
+        if self.damaged:
+            self.flash += 1
+            if self.flash >= 10:
+                self.damaged = False
+                self.flash = 0
+            else:
+                global THESCREEN
+                THESCREEN.blit(self.flashSurface, self.rect.topleft)
+            
                              
 
 class Tank(pygame.sprite.Sprite):
@@ -114,13 +137,13 @@ class Tank(pygame.sprite.Sprite):
             targetPos = self.target
         moveBy = [0,0]
         if targetPos.x < self.rect.x and self.rect.x - targetPos.x > 3:
-            moveBy[0] = -3
+            moveBy[0] = -1
         elif targetPos.x > self.rect.x and targetPos.x - self.rect.x > 3:
-            moveBy[0] = 3
+            moveBy[0] = 1
         if targetPos.y < self.rect.y and self.rect.y - targetPos.y > 3:
-            moveBy[1] = -3
+            moveBy[1] = -1
         elif targetPos.y > self.rect.y and targetPos.y - self.rect.y > 3:
-            moveBy[1] = 3
+            moveBy[1] = 1
 
         self.rect = self.rect.move(moveBy[0], moveBy[1])
             
@@ -162,6 +185,8 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((1000, 600))
     pygame.display.set_caption('Strata Gem')
+    global THESCREEN
+    THESCREEN = screen
 
     #Create the background
     background = pygame.Surface(screen.get_size())
@@ -181,10 +206,12 @@ def main():
     tank = Tank(True)
     enemyTank = Tank(False)
     enemyTank.rect = enemyTank.rect.move(0,200)
-    town = Town()
+    town = Town(False)
+    base = Town(True)
     town.rect = town.rect.move(50, 400)
-    enemyTank.target = town
-    allsprites = pygame.sprite.Group(tank, enemyTank, town)
+    base.rect = base.rect.move(800, 400)
+    enemyTank.target = base
+    allsprites = pygame.sprite.Group(tank, enemyTank, town, base)
     clock = pygame.time.Clock()
 
     curSelected = None
