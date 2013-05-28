@@ -7,8 +7,6 @@ if not pygame.mixer: print 'Warning, sound disabled'
 main_dir = os.path.split(os.path.abspath(sys.argv[0]))[0]
 data_dir = os.path.join(main_dir, 'data')
 
-THESCREEN = None
-
 def load_image(name, colorkey=None):
     fullname = os.path.join(data_dir, name)
     try:
@@ -193,8 +191,6 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((1000, 600))
     pygame.display.set_caption('Strata Gem')
-    global THESCREEN
-    THESCREEN = screen
 
     #Create the background
     background = pygame.Surface(screen.get_size())
@@ -211,15 +207,39 @@ def main():
     pygame.display.flip()
 
     #Prepare Game Objects
-    tank = Tank(True)
-    enemyTank = Tank(False)
-    enemyTank.rect = enemyTank.rect.move(0,200)
+    tank1 = Tank(True)
+    tank1.rect = tank1.rect.move(425, 375)
+    tank2 = Tank(True)
+    tank2.rect = tank2.rect.move(375, 425)
+    tank3 = Tank(True)
+    tank3.rect = tank3.rect.move(475, 425)
+
     town = Town(False)
     base = Town(True)
     town.rect = town.rect.move(50, 400)
     base.rect = base.rect.move(800, 400)
-    enemyTank.target = base
-    allsprites = pygame.sprite.Group(tank, enemyTank, town, base)
+    
+    enemyTank1 = Tank(False)
+    enemyTank1.rect = enemyTank1.rect.move(10,80)
+    enemyTank1.target = town
+    enemyTank2 = Tank(False)
+    enemyTank2.rect = enemyTank2.rect.move(70, 140)
+    enemyTank2.target = town
+    enemyTank3 = Tank(False)
+    enemyTank3.rect = enemyTank3.rect.move(140, 80)
+    enemyTank3.target = town
+
+    enemyTank4 = Tank(False)
+    enemyTank4.rect = enemyTank4.rect.move(840, 80)
+    enemyTank4.target = base
+    enemyTank5 = Tank(False)
+    enemyTank5.rect = enemyTank5.rect.move(900, 140)
+    enemyTank5.target = base
+    enemyTank6 = Tank(False)
+    enemyTank6.rect = enemyTank6.rect.move(950, 80)
+    enemyTank6.target = base
+    allsprites = pygame.sprite.Group(tank1, tank2, tank3, enemyTank1, enemyTank2, enemyTank3, \
+                                     enemyTank4, enemyTank5, enemyTank6, town, base)
     clock = pygame.time.Clock()
 
     curSelected = None
