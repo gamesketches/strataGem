@@ -53,22 +53,22 @@ class Town(pygame.sprite.Sprite):
     def __init__(self, playerControlled):
         pygame.sprite.Sprite.__init__(self)
         self.hp = 20
-        self.flash = 0
-        self.damaged = False
         self.playerControlled = playerControlled
         if not playerControlled:
             self.image, self.rect = load_image("town.bmp")
         else:
             self.image, self.rect = load_image("base.bmp")
+        self.imageCopy = pygame.Surface.copy(self.image)
         self.flashSurface = pygame.Surface(self.rect.size)
         self.flashSurface = self.flashSurface.convert()
         self.flashSurface.fill((250,0,0))
+        self.flashTimer = 0
         self.position = Point(self.rect.center[0], self.rect.center[1])
 
     def takeDamage(self, damage, aggressor):
         "Takes damage, ends game when it dies"
         self.hp -= damage
-        self.damaged = True
+        self.flashTimer = 10
         print "Town is under attack"
         if self.hp <= 0:
             self.kill()
@@ -80,14 +80,11 @@ class Town(pygame.sprite.Sprite):
     def update(self):
         self.position.x = self.rect.center[0]
         self.position.y = self.rect.center[1]
-        if self.damaged:
-            self.flash += 1
-            if self.flash >= 10:
-                self.damaged = False
-                self.flash = 0
-            else:
-                global THESCREEN
-                THESCREEN.blit(self.flashSurface, self.rect.topleft)
+        if self.flashTimer > 0:
+            self.image.blit(self.flashSurface, (0,0))
+            self.flashTimer -= 1
+        else:
+            self.image.blit(self.imageCopy, (0,0))
             
                              
 
@@ -104,7 +101,7 @@ class Tank(pygame.sprite.Sprite):
             self.image, self.rect = load_image("enemyTank.bmp")
         self.imageCopy = pygame.Surface.copy(self.image)
         self.position = Point(self.rect.center[0], self.rect.center[1])
-        self.hitFlash = pygame.Surface((self.rect.width, self.rect.height))
+        self.hitFlash = pygame.Surface(self.rect.size)
         self.hitFlash.fill((250,0,0))
         self.hitFlash.convert()
         self.flashTime = 0
