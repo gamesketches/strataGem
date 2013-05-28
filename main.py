@@ -102,7 +102,12 @@ class Tank(pygame.sprite.Sprite):
             self.image, self.rect = load_image("tank.bmp")
         else:
             self.image, self.rect = load_image("enemyTank.bmp")
+        self.imageCopy = pygame.Surface.copy(self.image)
         self.position = Point(self.rect.center[0], self.rect.center[1])
+        self.hitFlash = pygame.Surface((self.rect.width, self.rect.height))
+        self.hitFlash.fill((250,0,0))
+        self.hitFlash.convert()
+        self.flashTime = 0
         self.attacking = False
         self.attackDelay = 70
         self.reloadTime = 70
@@ -111,6 +116,11 @@ class Tank(pygame.sprite.Sprite):
     def update(self):
         self.position.x = self.rect.center[0]
         self.position.y = self.rect.center[1]
+        if self.flashTime > 0:
+            self.flashTime -= 1
+            self.image.blit(self.hitFlash, (0, 0))
+        else:
+            self.image.blit(self.imageCopy, (0,0))
         if self.attacking:
             if distance(self.position, self.target.position) >= 100:
                 self.attacking = False
@@ -150,6 +160,7 @@ class Tank(pygame.sprite.Sprite):
     def takeDamage(self, damage, aggressor):
         "Takes damage, returns true if unit dies, false otherwise"
         self.hp -= damage
+        self.flashTime = 10
         print "We've been hit"
         if self.target is None or not self.playerControlled:
             self.target = aggressor
