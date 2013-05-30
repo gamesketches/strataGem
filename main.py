@@ -50,7 +50,7 @@ class Town(pygame.sprite.Sprite):
     """towns that get attacked in the game, the big "moral choice" of the game is saving one"""
     def __init__(self, playerControlled):
         pygame.sprite.Sprite.__init__(self)
-        self.hp = 20
+        self.hp = 40
         self.playerControlled = playerControlled
         if not playerControlled:
             self.image, self.rect = load_image("town.bmp")

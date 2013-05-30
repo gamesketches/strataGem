@@ -1,10 +1,8 @@
-from cx_Freeze import setup, Executable
-import sys
+from distutils.core import setup
+import py2exe, sys, os
 
-setup(
-      name="strataGem.exe",
-      version="1.0",
-      author="Sam Von Ehren",
-      description="Copyright 2013",
-      executables=[Executable(script = "main.py", base = "Win32GUI")],
-      )
+setup(console=["main.py"],
+      options = {"py2exe":{"compressed":1,
+                           "optimize": 2,
+                           "ascii": 1,
+                           "packages": []}}, zipfile = None, )
